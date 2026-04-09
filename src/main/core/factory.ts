@@ -144,6 +144,10 @@ export async function generateProfile(): Promise<string | undefined> {
   if (['info', 'debug'].includes(profile['log-level']) === false) {
     profile['log-level'] = 'info'
   }
+  // 删除空的局域网允许列表，避免局域网访问异常
+  if (!profile['lan-allowed-ips']?.length) {
+    delete profile['lan-allowed-ips']
+  }
   runtimeConfig = profile
   runtimeConfigStr = stringify(profile)
   if (diffWorkDir) {
