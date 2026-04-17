@@ -6,7 +6,7 @@ import SettingCard from '@renderer/components/base/base-setting-card'
 import SettingItem from '@renderer/components/base/base-setting-item'
 import { useControledMihomoConfig } from '@renderer/hooks/use-controled-mihomo-config'
 import { useAppConfig } from '@renderer/hooks/use-app-config'
-import { restartCore, patchMihomoConfig } from '@renderer/utils/ipc'
+import { mihomoHotReloadConfig } from '@renderer/utils/ipc'
 import React, { Key, ReactNode, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
@@ -144,8 +144,7 @@ const DNS: React.FC = () => {
       setChanged(false)
       await patchControledMihomoConfig(patch)
       if (controlDns) {
-        await patchMihomoConfig(patch)
-        await restartCore()
+        await mihomoHotReloadConfig()
       }
     } catch (e) {
       showErrorSync(e, t('common.error.dnsConfigSaveFailed'))
@@ -427,7 +426,7 @@ const DNS: React.FC = () => {
         <SettingItem title={t('dns.fallbackFilter.geoipCode')} divider>
           <Input
             size="sm"
-            className="w-[100px]"
+            className="w-25"
             value={typeof values.fallbackGeoipCode === 'string' ? values.fallbackGeoipCode : ''}
             placeholder="CN"
             onValueChange={(v) => {

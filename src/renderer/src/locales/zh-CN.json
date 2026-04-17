@@ -164,6 +164,8 @@
   "mihomo.cpuPriority.low": "低",
   "mihomo.workDir.title": "不同订阅使用独立工作目录",
   "mihomo.workDir.tooltip": "启用后可避免不同订阅中存在相同名称的代理组时发生冲突",
+  "mihomo.hotReloadProfile.title": "切换订阅时热重载配置",
+  "mihomo.hotReloadProfile.tooltip": "启用后切换订阅时通过 API 热重载配置而无需重启内核，禁用时仍使用重启方式切换",
   "mihomo.controlSniff": "控制域名嗅探",
   "mihomo.autoCloseConnection": "自动关闭连接",
   "mihomo.testProfileOnStart": "启动时检查配置文件",

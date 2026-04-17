@@ -83,6 +83,7 @@ interface IpcApi {
   openFile: (type: 'profile' | 'override', id: string, ext?: 'yaml' | 'js') => Promise<void>
   // Core
   restartCore: () => Promise<void>
+  mihomoHotReloadConfig: () => Promise<void>
   startMonitor: () => Promise<void>
   quitWithoutCore: () => Promise<void>
   // System
@@ -240,6 +241,7 @@ export const {
   openFile,
   // Core
   restartCore,
+  mihomoHotReloadConfig,
   startMonitor,
   quitWithoutCore,
   // System
@@ -361,7 +363,7 @@ export async function getAppName(appPath: string): Promise<string> {
   return invoke<string>('getAppName', appPath)
 }
 
-// getIconDataURL: 获取应用图标的Base64数据
+// getIconDataURL: 获取应用图标的 Base64 数据
 export async function getIconDataURL(appPath: string): Promise<string> {
   return invoke<string>('getIconDataURL', appPath)
 }

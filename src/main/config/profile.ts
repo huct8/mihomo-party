@@ -7,7 +7,7 @@ import * as chromeRequest from '../utils/chromeRequest'
 import { parse, stringify } from '../utils/yaml'
 import { defaultProfile } from '../utils/template'
 import { subStorePort } from '../resolve/server'
-import { mihomoUpgradeConfig } from '../core/mihomoApi'
+import { mihomoUpgradeConfig, mihomoHotReloadConfig } from '../core/mihomoApi'
 import { restartCore } from '../core/manager'
 import { addProfileUpdater, removeProfileUpdater } from '../core/profileUpdater'
 import { mihomoProfileWorkDir, mihomoWorkDir, profileConfigPath, profilePath } from '../utils/dirs'
@@ -77,7 +77,12 @@ export async function changeCurrentProfile(id: string): Promise<void> {
           config.current = id
           return config
         })
-        await restartCore()
+        const { useHotReloadProfile = false } = await getAppConfig()
+        if (useHotReloadProfile) {
+          await mihomoHotReloadConfig()
+        } else {
+          await restartCore()
+        }
       } catch (e) {
         // 回滚配置
         await updateProfileConfig((config) => {

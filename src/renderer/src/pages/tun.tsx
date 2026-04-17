@@ -64,7 +64,6 @@ const Tun: React.FC = () => {
 
   const onSave = async (patch: Partial<IMihomoConfig>): Promise<void> => {
     await patchControledMihomoConfig(patch)
-    await restartCore()
     setChanged(false)
   }
 
@@ -169,7 +168,7 @@ const Tun: React.FC = () => {
           <SettingItem title={t('tun.device.title')} divider>
             <Input
               size="sm"
-              className="w-[100px]"
+              className="w-25"
               value={values.device}
               placeholder={platform === 'darwin' ? 'utun1500' : 'Mihomo'}
               onValueChange={(v) => {
@@ -220,7 +219,7 @@ const Tun: React.FC = () => {
             <Input
               size="sm"
               type="number"
-              className="w-[100px]"
+              className="w-25"
               value={values.mtu.toString()}
               onValueChange={(v) => {
                 const num = parseInt(v)

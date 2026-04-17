@@ -36,6 +36,7 @@ import {
 import PubSub from 'pubsub-js'
 import {
   mihomoUpgrade,
+  mihomoHotReloadConfig,
   restartCore,
   startSubStoreBackendServer,
   triggerSysProxy,
@@ -319,7 +320,6 @@ const Mihomo: React.FC = () => {
 
   const onChangeNeedRestart = async (patch: Partial<IMihomoConfig>): Promise<void> => {
     await patchControledMihomoConfig(patch)
-    await restartCore()
   }
 
   const handleConfigChangeWithRestart = async (key: string, value: unknown) => {
@@ -472,7 +472,7 @@ const Mihomo: React.FC = () => {
                   color="primary"
                   onValueChange={async (v) => {
                     await patchAppConfig({ enableSmartOverride: v })
-                    await restartCore()
+                    await mihomoHotReloadConfig()
                   }}
                 />
               </SettingItem>
@@ -535,7 +535,7 @@ const Mihomo: React.FC = () => {
                     ? 'data-[hover=true]:bg-blue-100 dark:data-[hover=true]:bg-blue-900/50'
                     : 'data-[hover=true]:bg-default-200'
                 }}
-                className="w-[150px]"
+                className="w-37.5"
                 size="sm"
                 aria-label={t('mihomo.selectCoreVersion')}
                 selectedKeys={new Set([core])}
@@ -587,7 +587,7 @@ const Mihomo: React.FC = () => {
                     isSelected={smartCoreUseLightGBM}
                     onValueChange={async (v) => {
                       await patchAppConfig({ smartCoreUseLightGBM: v })
-                      await restartCore()
+                      await mihomoHotReloadConfig()
                     }}
                   />
                 </SettingItem>
@@ -613,7 +613,7 @@ const Mihomo: React.FC = () => {
                     isSelected={smartCoreCollectData}
                     onValueChange={async (v) => {
                       await patchAppConfig({ smartCoreCollectData: v })
-                      await restartCore()
+                      await mihomoHotReloadConfig()
                     }}
                   />
                 </SettingItem>
@@ -636,7 +636,7 @@ const Mihomo: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <Input
                       size="sm"
-                      className="w-[100px]"
+                      className="w-25"
                       type="number"
                       value={smartCollectorSize.toString()}
                       onValueChange={async (v: string) => {
@@ -650,7 +650,7 @@ const Mihomo: React.FC = () => {
                         if (isNaN(num)) num = 100
                         if (num < 1) num = 1
                         await patchAppConfig({ smartCollectorSize: num })
-                        await restartCore()
+                        await mihomoHotReloadConfig()
                       }}
                     />
                     <span className="text-default-500">MB</span>
@@ -662,7 +662,7 @@ const Mihomo: React.FC = () => {
                     classNames={{
                       trigger: 'data-[hover=true]:bg-blue-100 dark:data-[hover=true]:bg-blue-900/50'
                     }}
-                    className="w-[150px]"
+                    className="w-37.5"
                     size="sm"
                     aria-label={t('mihomo.smartCoreStrategy')}
                     selectedKeys={new Set([smartCoreStrategy])}
@@ -670,7 +670,7 @@ const Mihomo: React.FC = () => {
                     onSelectionChange={async (v) => {
                       const strategy = v.currentKey as 'sticky-sessions' | 'round-robin'
                       await patchAppConfig({ smartCoreStrategy: strategy })
-                      await restartCore()
+                      await mihomoHotReloadConfig()
                     }}
                   >
                     <SelectItem key="sticky-sessions">
@@ -710,7 +710,7 @@ const Mihomo: React.FC = () => {
               <Input
                 size="sm"
                 type="number"
-                className="w-[100px]"
+                className="w-25"
                 value={(showMixedPort ?? mixedPort ?? '').toString()}
                 max={65535}
                 min={0}
@@ -771,7 +771,7 @@ const Mihomo: React.FC = () => {
               <Input
                 size="sm"
                 type="number"
-                className="w-[100px]"
+                className="w-25"
                 value={(showSocksPort ?? socksPort ?? '').toString()}
                 max={65535}
                 min={0}
@@ -832,7 +832,7 @@ const Mihomo: React.FC = () => {
               <Input
                 size="sm"
                 type="number"
-                className="w-[100px]"
+                className="w-25"
                 value={(showHttpPort ?? httpPort ?? '').toString()}
                 max={65535}
                 min={0}
@@ -894,7 +894,7 @@ const Mihomo: React.FC = () => {
                 <Input
                   size="sm"
                   type="number"
-                  className="w-[100px]"
+                  className="w-25"
                   value={(showRedirPort ?? redirPort ?? '').toString()}
                   max={65535}
                   min={0}
@@ -957,7 +957,7 @@ const Mihomo: React.FC = () => {
                 <Input
                   size="sm"
                   type="number"
-                  className="w-[100px]"
+                  className="w-25"
                   value={(showTproxyPort ?? tproxyPort ?? '').toString()}
                   max={65535}
                   min={0}
@@ -1029,7 +1029,7 @@ const Mihomo: React.FC = () => {
               >
                 <Input
                   size="sm"
-                  className={`w-[200px] ${externalControllerError ? 'border-red-500 ring-1 ring-red-500 rounded-lg' : ''}`}
+                  className={`w-50 ${externalControllerError ? 'border-red-500 ring-1 ring-red-500 rounded-lg' : ''}`}
                   value={externalControllerInput}
                   onValueChange={(v) => {
                     setExternalControllerInput(v)
@@ -1081,7 +1081,7 @@ const Mihomo: React.FC = () => {
               <Input
                 size="sm"
                 type={isSecretVisible ? 'text' : 'password'}
-                className="w-[200px]"
+                className="w-50"
                 value={secretInput}
                 onValueChange={(v) => {
                   setSecretInput(v)
@@ -1422,7 +1422,7 @@ const Mihomo: React.FC = () => {
             <Input
               size="sm"
               type="number"
-              className="w-[100px]"
+              className="w-25"
               value={maxLogDays.toString()}
               onValueChange={(v) => {
                 const num = parseInt(v)
@@ -1436,7 +1436,7 @@ const Mihomo: React.FC = () => {
             <Input
               size="sm"
               type="number"
-              className="w-[100px]"
+              className="w-25"
               value={maxLogFileSize.toString()}
               onValueChange={(v) => {
                 const num = parseInt(v)
@@ -1455,7 +1455,7 @@ const Mihomo: React.FC = () => {
           <SettingItem title={t('mihomo.logLevel')} divider>
             <Select
               classNames={{ trigger: 'data-[hover=true]:bg-default-200' }}
-              className="w-[100px]"
+              className="w-25"
               size="sm"
               aria-label={t('mihomo.selectLogLevel')}
               selectedKeys={new Set([logLevel])}
@@ -1474,7 +1474,7 @@ const Mihomo: React.FC = () => {
           <SettingItem title={t('mihomo.findProcess')}>
             <Select
               classNames={{ trigger: 'data-[hover=true]:bg-default-200' }}
-              className="w-[100px]"
+              className="w-25"
               size="sm"
               aria-label={t('mihomo.selectFindProcessMode')}
               selectedKeys={new Set([findProcessMode])}
@@ -1506,7 +1506,7 @@ const Mihomo: React.FC = () => {
           <ModalBody className="flex flex-col h-full">
             <div className="flex flex-col h-full">
               {/* 添加/编辑面板表单 */}
-              <div className="flex flex-col gap-2 p-3 bg-default-100 rounded-lg flex-shrink-0">
+              <div className="flex flex-col gap-2 p-3 bg-default-100 rounded-lg shrink-0">
                 <Input
                   label={t('settings.webui.panelName')}
                   placeholder={t('settings.webui.panelNamePlaceholder')}
@@ -1563,12 +1563,12 @@ const Mihomo: React.FC = () => {
               </div>
 
               {/* 面板列表 */}
-              <div className="flex flex-col gap-2 mt-2 overflow-y-auto flex-grow">
+              <div className="flex flex-col gap-2 mt-2 overflow-y-auto grow">
                 <h3 className="text-lg font-semibold">{t('settings.webui.panels')}</h3>
                 {allPanels.map((panel) => (
                   <div
                     key={panel.id}
-                    className="flex items-start justify-between p-3 bg-default-50 rounded-lg flex-shrink-0"
+                    className="flex items-start justify-between p-3 bg-default-50 rounded-lg shrink-0"
                   >
                     <div className="flex-1 mr-2">
                       <p className="font-medium">{panel.name}</p>

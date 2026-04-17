@@ -59,7 +59,8 @@ export const defaultConfig: IAppConfig = {
   enableRedirPort: false,
   showTproxyPort: 0,
   enableTproxyPort: false,
-  testProfileOnStart: true
+  testProfileOnStart: true,
+  useHotReloadProfile: false
 }
 
 export const defaultControledMihomoConfig: Partial<IMihomoConfig> = {

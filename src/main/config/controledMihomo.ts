@@ -1,6 +1,5 @@
 import { readFile, writeFile } from 'fs/promises'
 import { existsSync } from 'fs'
-import { ipcMain } from 'electron'
 import { controledMihomoConfigPath } from '../utils/dirs'
 import { parse, stringify } from '../utils/yaml'
 import { generateProfile } from '../core/factory'
@@ -67,8 +66,6 @@ export async function patchControledMihomoConfig(patch: Partial<IMihomoConfig>):
     ) {
       // 恢复 DNS 状态并清除保存的状态
       await patchAppConfig({ controlDns: controlDnsBeforePause, controlDnsBeforePause: undefined })
-      // 通过事件通知重启核心，避免循环依赖
-      ipcMain.emit('restartCore')
     }
 
     // 过滤端口字段中的 NaN 值，防止写入无效配置
@@ -102,6 +99,17 @@ export async function patchControledMihomoConfig(patch: Partial<IMihomoConfig>):
 
     await generateProfile()
     await writeFile(controledMihomoConfigPath(), stringify(controledMihomoConfig), 'utf-8')
+
+    // 优先对运行中内核进行热更新，避免无意义重启
+    try {
+      const { patchMihomoConfig } = await import('../core/mihomoApi')
+      await patchMihomoConfig(patch)
+    } catch (error) {
+      controledMihomoLogger.warn(
+        'Hot patch /configs failed, changes will apply on next restart',
+        error
+      )
+    }
   })
   await controledMihomoWriteQueue
 }

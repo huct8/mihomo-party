@@ -161,6 +161,8 @@
   "mihomo.cpuPriority.low": "Low",
   "mihomo.workDir.title": "Separate Work Directory for Different Subscriptions",
   "mihomo.workDir.tooltip": "Enable to avoid conflicts when different subscriptions have proxy groups with the same name",
+  "mihomo.hotReloadProfile.title": "Hot Reload Config on Profile Switch",
+  "mihomo.hotReloadProfile.tooltip": "When enabled, switching profiles uses the API to hot reload config without restarting the core. When disabled, the core restarts as usual.",
   "mihomo.controlSniff": "Control Domain Sniffing",
   "mihomo.autoCloseConnection": "Auto Close Connection",
   "mihomo.testProfileOnStart": "Test Profile on Start",

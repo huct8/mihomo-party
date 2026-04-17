@@ -21,6 +21,7 @@ import {
   mihomoUpgradeGeo,
   mihomoUpgradeUI,
   mihomoUpgradeConfig,
+  mihomoHotReloadConfig,
   mihomoVersion,
   patchMihomoConfig,
   mihomoSmartGroupWeights,
@@ -284,6 +285,7 @@ const asyncHandlers: Record<string, AsyncFn> = {
   readTextFile,
   // Core
   restartCore,
+  mihomoHotReloadConfig,
   startMonitor,
   quitWithoutCore,
   // System

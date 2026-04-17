@@ -16,7 +16,7 @@ import {
 import { toast } from '@renderer/components/base/toast'
 import React, { useState } from 'react'
 import { useOverrideConfig } from '@renderer/hooks/use-override-config'
-import { restartCore, addProfileUpdater } from '@renderer/utils/ipc'
+import { mihomoHotReloadConfig, addProfileUpdater } from '@renderer/utils/ipc'
 import { MdDeleteForever } from 'react-icons/md'
 import { FaPlus } from 'react-icons/fa6'
 import { useTranslation } from 'react-i18next'
@@ -49,7 +49,7 @@ const EditInfoModal: React.FC<Props> = (props) => {
       }
       await updateProfileItem(updatedItem)
       await addProfileUpdater(updatedItem)
-      await restartCore()
+      await mihomoHotReloadConfig()
       onClose()
     } catch (e) {
       toast.error(String(e))

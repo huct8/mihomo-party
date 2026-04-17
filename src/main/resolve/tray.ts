@@ -30,7 +30,6 @@ import { dataDir, logDir, mihomoCoreDir, mihomoWorkDir } from '../utils/dirs'
 import { triggerSysProxy } from '../sys/sysproxy'
 import {
   quitWithoutCore,
-  restartCore,
   checkMihomoCorePermissions,
   requestTunPermissions,
   restartAsAdmin
@@ -264,7 +263,6 @@ export const buildContextMenu = async (): Promise<Menu> => {
           }
           mainWindow?.webContents.send('controledMihomoConfigUpdated')
           floatingWindow?.webContents.send('controledMihomoConfigUpdated')
-          await restartCore()
         } catch {
           // ignore
         } finally {

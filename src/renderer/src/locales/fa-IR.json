@@ -141,6 +141,8 @@
   "mihomo.cpuPriority.low": "پایین",
   "mihomo.workDir.title": "استفاده از پوشه کاری مجزا برای اشتراک‌های مختلف",
   "mihomo.workDir.tooltip": "برای جلوگیری از تداخل گروه‌های پراکسی با نام یکسان در اشتراک‌های مختلف",
+  "mihomo.hotReloadProfile.title": "بارگذاری گرم پیکربندی در تغییر پروفایل",
+  "mihomo.hotReloadProfile.tooltip": "در صورت فعال بودن، تغییر پروفایل بدون راه‌اندازی مجدد هسته انجام می‌شود",
   "mihomo.controlSniff": "کنترل تشخیص دامنه",
   "mihomo.autoCloseConnection": "بستن خودکار اتصال",
   "mihomo.testProfileOnStart": "بررسی پروفایل در شروع",
