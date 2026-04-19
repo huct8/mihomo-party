@@ -5,6 +5,15 @@ import { logger } from '../utils/logger'
 const intervalPool: Record<string, Cron | NodeJS.Timeout> = {}
 const delayedUpdatePool: Record<string, NodeJS.Timeout> = {}
 
+// 定时触发的订阅刷新至少间隔1分钟
+const MIN_INTERVAL_MS = 60 * 1000
+
+function safeIntervalMs(minutes: unknown): number {
+  const requestedMs = Number(minutes) * 60 * 1000
+  if (!Number.isFinite(requestedMs) || requestedMs <= 0) return MIN_INTERVAL_MS
+  return Math.max(MIN_INTERVAL_MS, requestedMs)
+}
+
 async function updateProfile(id: string): Promise<void> {
   const item = await getProfileItem(id)
   if (item && item.type === 'remote') {
@@ -20,16 +29,13 @@ export async function initProfileUpdater(): Promise<void> {
     if (item.type === 'remote' && item.autoUpdate && item.interval) {
       const itemId = item.id
       if (typeof item.interval === 'number') {
-        intervalPool[itemId] = setInterval(
-          async () => {
-            try {
-              await updateProfile(itemId)
-            } catch (e) {
-              await logger.warn(`[ProfileUpdater] Failed to update profile ${itemId}:`, e)
-            }
-          },
-          item.interval * 60 * 1000
-        )
+        intervalPool[itemId] = setInterval(async () => {
+          try {
+            await updateProfile(itemId)
+          } catch (e) {
+            await logger.warn(`[ProfileUpdater] Failed to update profile ${itemId}:`, e)
+          }
+        }, safeIntervalMs(item.interval))
       } else if (typeof item.interval === 'string') {
         intervalPool[itemId] = new Cron(item.interval, async () => {
           try {
@@ -51,28 +57,23 @@ export async function initProfileUpdater(): Promise<void> {
   if (currentItem?.type === 'remote' && currentItem.autoUpdate && currentItem.interval) {
     const currentId = currentItem.id
     if (typeof currentItem.interval === 'number') {
-      intervalPool[currentId] = setInterval(
-        async () => {
-          try {
-            await updateProfile(currentId)
-          } catch (e) {
-            await logger.warn(`[ProfileUpdater] Failed to update current profile:`, e)
-          }
-        },
-        currentItem.interval * 60 * 1000
-      )
+      const currentMs = safeIntervalMs(currentItem.interval)
+      intervalPool[currentId] = setInterval(async () => {
+        try {
+          await updateProfile(currentId)
+        } catch (e) {
+          await logger.warn(`[ProfileUpdater] Failed to update current profile:`, e)
+        }
+      }, currentMs)
 
-      delayedUpdatePool[currentId] = setTimeout(
-        async () => {
-          delete delayedUpdatePool[currentId]
-          try {
-            await updateProfile(currentId)
-          } catch (e) {
-            await logger.warn(`[ProfileUpdater] Failed to update current profile:`, e)
-          }
-        },
-        currentItem.interval * 60 * 1000 + 10000
-      )
+      delayedUpdatePool[currentId] = setTimeout(async () => {
+        delete delayedUpdatePool[currentId]
+        try {
+          await updateProfile(currentId)
+        } catch (e) {
+          await logger.warn(`[ProfileUpdater] Failed to update current profile:`, e)
+        }
+      }, currentMs + 10000)
     } else if (typeof currentItem.interval === 'string') {
       intervalPool[currentId] = new Cron(currentItem.interval, async () => {
         try {
@@ -103,16 +104,13 @@ export async function addProfileUpdater(item: IProfileItem): Promise<void> {
 
     const itemId = item.id
     if (typeof item.interval === 'number') {
-      intervalPool[itemId] = setInterval(
-        async () => {
-          try {
-            await updateProfile(itemId)
-          } catch (e) {
-            await logger.warn(`[ProfileUpdater] Failed to update profile ${itemId}:`, e)
-          }
-        },
-        item.interval * 60 * 1000
-      )
+      intervalPool[itemId] = setInterval(async () => {
+        try {
+          await updateProfile(itemId)
+        } catch (e) {
+          await logger.warn(`[ProfileUpdater] Failed to update profile ${itemId}:`, e)
+        }
+      }, safeIntervalMs(item.interval))
     } else if (typeof item.interval === 'string') {
       intervalPool[itemId] = new Cron(item.interval, async () => {
         try {

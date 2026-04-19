@@ -20,6 +20,8 @@ const profileLogger = createLogger('Profile')
 let profileConfig: IProfileConfig
 let profileConfigWriteQueue: Promise<void> = Promise.resolve()
 let changeProfileQueue: Promise<void> = Promise.resolve()
+// 并发去重
+const inflightRemoteFetches = new Map<string, Promise<IProfileItem>>()
 
 export async function getProfileConfig(force = false): Promise<IProfileConfig> {
   if (force || !profileConfig) {
@@ -267,57 +269,74 @@ export async function createProfile(item: Partial<IProfileItem>): Promise<IProfi
   // Remote
   if (!item.url) throw new Error('Empty URL')
 
-  const { userAgent, subscriptionTimeout = 30000 } = await getAppConfig()
-  const { 'mixed-port': mixedPort = 7890 } = await getControledMihomoConfig()
-  const userItemTimeoutMs =
-    typeof newItem.updateTimeout === 'number' && newItem.updateTimeout > 0
-      ? newItem.updateTimeout * 1000
-      : subscriptionTimeout
+  const dedupKey = `${id}::${item.url}`
+  const existing = inflightRemoteFetches.get(dedupKey)
+  if (existing) return existing
 
-  const baseOptions: Omit<FetchOptions, 'useProxy' | 'timeout'> = {
-    url: item.url,
-    mixedPort,
-    userAgent: item.userAgent || userAgent || `mihomo.party/v${app.getVersion()} (clash.meta)`,
-    authToken: item.authToken,
-    substore: newItem.substore || false
-  }
+  const promise = (async (): Promise<IProfileItem> => {
+    const { userAgent, subscriptionTimeout = 30000 } = await getAppConfig()
+    const { 'mixed-port': mixedPort = 7890 } = await getControledMihomoConfig()
+    const userItemTimeoutMs =
+      typeof newItem.updateTimeout === 'number' && newItem.updateTimeout > 0
+        ? newItem.updateTimeout * 1000
+        : subscriptionTimeout
 
-  const fetchSub = (useProxy: boolean, timeout: number) =>
-    fetchAndValidateSubscription({ ...baseOptions, useProxy, timeout })
+    const baseOptions: Omit<FetchOptions, 'useProxy' | 'timeout'> = {
+      url: item.url!,
+      mixedPort,
+      userAgent: item.userAgent || userAgent || `mihomo.party/v${app.getVersion()} (clash.meta)`,
+      authToken: item.authToken,
+      substore: newItem.substore || false
+    }
 
-  let result: FetchResult
-  if (newItem.useProxy || newItem.substore) {
-    result = await fetchSub(Boolean(newItem.useProxy), userItemTimeoutMs)
-  } else {
-    try {
-      result = await fetchSub(false, userItemTimeoutMs)
-    } catch (directError) {
+    const fetchSub = (useProxy: boolean, timeout: number): Promise<FetchResult> =>
+      fetchAndValidateSubscription({ ...baseOptions, useProxy, timeout })
+
+    let result: FetchResult
+    if (newItem.useProxy || newItem.substore) {
+      result = await fetchSub(Boolean(newItem.useProxy), userItemTimeoutMs)
+    } else {
       try {
-        // smart fallback
-        result = await fetchSub(true, subscriptionTimeout)
-      } catch {
-        throw directError
+        result = await fetchSub(false, userItemTimeoutMs)
+      } catch (directError) {
+        try {
+          // smart fallback
+          result = await fetchSub(true, subscriptionTimeout)
+        } catch {
+          throw directError
+        }
       }
     }
-  }
 
-  const { data, headers } = result
+    const { data, headers } = result
 
-  if (headers['content-disposition'] && newItem.name === 'Remote File') {
-    newItem.name = parseFilename(headers['content-disposition'])
-  }
-  if (headers['profile-web-page-url']) {
-    newItem.home = headers['profile-web-page-url']
-  }
-  if (headers['profile-update-interval'] && !item.allowFixedInterval) {
-    newItem.interval = parseInt(headers['profile-update-interval']) * 60
-  }
-  if (headers['subscription-userinfo']) {
-    newItem.extra = parseSubinfo(headers['subscription-userinfo'])
-  }
+    if (headers['content-disposition'] && newItem.name === 'Remote File') {
+      newItem.name = parseFilename(headers['content-disposition'])
+    }
+    if (headers['profile-web-page-url']) {
+      newItem.home = headers['profile-web-page-url']
+    }
+    if (headers['profile-update-interval'] && !item.allowFixedInterval) {
+      // 拒绝等异常值
+      const ours = parseInt(headers['profile-update-interval'], 10)
+      if (Number.isFinite(hours) && hours > 0) {
+        newItem.interval = hours * 60
+      }
+    }
+    if (headers['subscription-userinfo']) {
+      newItem.extra = parseSubinfo(headers['subscription-userinfo'])
+    }
 
-  await setProfileStr(id, data)
-  return newItem
+    await setProfileStr(id, data)
+    return newItem
+  })()
+
+  inflightRemoteFetches.set(dedupKey, promise)
+  try {
+    return await promise
+  } finally {
+    inflightRemoteFetches.delete(dedupKey)
+  }
 }
 
 export async function getProfileStr(id: string | undefined): Promise<string> {
