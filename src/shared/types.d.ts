@@ -325,6 +325,7 @@ interface IAppConfig {
   useDockIcon?: boolean
   showTraffic?: boolean
   disableTrayIconColor?: boolean
+  customTrayIcon?: string
   trayProxyGroupStyle?: 'default' | 'submenu'
   disableAnimations?: boolean
   webdavUrl?: string

@@ -13,10 +13,14 @@ import {
   resourcesDir
 } from '../utils/dirs'
 
-export function getFilePath(ext: string[]): string[] | undefined {
+export function getFilePath(
+  ext: string[],
+  title?: string,
+  filterName?: string
+): string[] | undefined {
   return dialog.showOpenDialogSync({
-    title: i18next.t('common.dialog.selectSubscriptionFile'),
-    filters: [{ name: `${ext} file`, extensions: ext }],
+    title: title || i18next.t('common.dialog.selectSubscriptionFile'),
+    filters: [{ name: filterName || `${ext} file`, extensions: ext }],
     properties: ['openFile']
   })
 }

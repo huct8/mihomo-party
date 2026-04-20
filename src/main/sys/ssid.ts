@@ -5,6 +5,7 @@ import { getAppConfig, patchAppConfig, patchControledMihomoConfig } from '../con
 import { patchMihomoConfig } from '../core/mihomoApi'
 import { mainWindow } from '../window'
 import { getDefaultDevice } from '../core/manager'
+import { updateTrayIcon } from '../resolve/tray'
 
 export async function getCurrentSSID(): Promise<string | undefined> {
   if (process.platform === 'win32') {
@@ -51,6 +52,7 @@ export async function checkSSID(): Promise<void> {
       mainWindow?.webContents.send('controledMihomoConfigUpdated')
       mainWindow?.webContents.send('appConfigUpdated')
       ipcMain.emit('updateTrayMenu')
+      await updateTrayIcon()
     } else {
       // DNS 恢复逻辑已移至 patchControledMihomoConfig，会在模式从 direct 切换到 rule/global 时自动触发
       await patchControledMihomoConfig({ mode: 'rule' })
@@ -58,6 +60,7 @@ export async function checkSSID(): Promise<void> {
       mainWindow?.webContents.send('controledMihomoConfigUpdated')
       mainWindow?.webContents.send('appConfigUpdated')
       ipcMain.emit('updateTrayMenu')
+      await updateTrayIcon()
     }
   } catch {
     // ignore

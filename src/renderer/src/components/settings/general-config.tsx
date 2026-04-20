@@ -55,6 +55,7 @@ const GeneralConfig: React.FC = () => {
     disableTray = false,
     swapTrayClick = false,
     disableTrayIconColor = false,
+    customTrayIcon = '',
     disableAnimations = false,
     showFloatingWindow: showFloating = false,
     spinFloatingIcon = true,
@@ -118,7 +119,7 @@ const GeneralConfig: React.FC = () => {
         <SettingItem title={t('settings.language')} divider>
           <Select
             classNames={{ trigger: 'data-[hover=true]:bg-default-200' }}
-            className="w-[150px]"
+            className="w-37.5"
             size="sm"
             selectedKeys={[language]}
             aria-label={t('settings.language')}
@@ -362,11 +363,59 @@ const GeneralConfig: React.FC = () => {
               <Switch
                 size="sm"
                 isSelected={disableTrayIconColor}
+                isDisabled={Boolean(customTrayIcon)}
                 onValueChange={async (v) => {
                   await patchAppConfig({ disableTrayIconColor: v })
                   await updateTrayIcon()
                 }}
               />
+            </SettingItem>
+            <SettingItem
+              title={t('settings.customTrayIcon')}
+              actions={
+                <Tooltip content={t('settings.customTrayIconTooltip')}>
+                  <Button isIconOnly size="sm" variant="light">
+                    <IoIosHelpCircle className="text-lg" />
+                  </Button>
+                </Tooltip>
+              }
+              divider
+            >
+              <div className="flex items-center justify-end gap-2 min-w-0 max-w-[65%]">
+                {customTrayIcon && (
+                  <span className="truncate text-xs text-default-500" title={customTrayIcon}>
+                    {customTrayIcon}
+                  </span>
+                )}
+                <Button
+                  size="sm"
+                  variant="flat"
+                  onPress={async () => {
+                    const files = await getFilePath(
+                      ['png', 'jpg', 'jpeg', 'ico', 'icns'],
+                      t('settings.customTrayIconSelect'),
+                      t('settings.customTrayIcon')
+                    )
+                    if (!files?.[0]) return
+                    await patchAppConfig({ customTrayIcon: files[0] })
+                    await updateTrayIcon()
+                  }}
+                >
+                  {t(customTrayIcon ? 'settings.changeTrayIcon' : 'settings.selectTrayIcon')}
+                </Button>
+                {customTrayIcon && (
+                  <Button
+                    size="sm"
+                    variant="light"
+                    onPress={async () => {
+                      await patchAppConfig({ customTrayIcon: '' })
+                      await updateTrayIcon()
+                    }}
+                  >
+                    {t('common.default')}
+                  </Button>
+                )}
+              </div>
             </SettingItem>
           </>
         )}
